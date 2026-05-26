@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 경남 지산맞 훈련실적 대시보드</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #2b6cb0;
+            --accent: #38b2ac;
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --success: #48bb78;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #cbd5e1; display: grid; gap: 40px; grid-template-columns: 1fr; place-items: center; padding: 40px 0; font-family: 'Noto Sans KR', sans-serif; }
+        .slide-container { width: 1280px; height: 720px; background-color: var(--white); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 60px; }
+        .slide-container::after { content: ""; position: absolute; top: 0; right: 0; width: 300px; height: 100%; background: linear-gradient(135deg, transparent 0%, rgba(43, 108, 176, 0.05) 100%); z-index: 0; pointer-events: none; }
+        h1 { font-size: 64px; color: var(--primary); font-weight: 700; line-height: 1.1; }
+        .slide-title { font-size: 36px; color: var(--primary); font-weight: 700; margin-bottom: 40px; border-left: 8px solid var(--secondary); padding-left: 20px; text-transform: uppercase; letter-spacing: -0.02em; }
+        .content-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%; z-index: 1; }
+        .highlight-numbers-layout { display: flex; justify-content: space-around; text-align: center; width: 100%; }
+        .kpi-card { background: var(--bg-light); padding: 30px; border-radius: 12px; border-top: 4px solid var(--secondary); width: 220px; }
+        .number { font-size: 54px; font-weight: 700; color: var(--secondary); font-family: 'Roboto'; }
+        .number-label { font-size: 16px; color: var(--text-muted); font-weight: 700; margin-top: 10px; }
+        .bar { display: flex; align-items: center; margin-bottom: 15px; }
+        .bar .label { width: 220px; font-weight: 700; text-align: right; margin-right: 20px; color: var(--text-dark); }
+        .bar-inner { flex-grow: 1; height: 35px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; color: white; font-weight: 700; font-size: 14px; }
+        .doughnut-chart-container { display: flex; align-items: center; justify-content: center; gap: 60px; }
+        .doughnut-chart { width: 350px; height: 350px; border-radius: 50%; }
+        .legend { list-style: none; }
+        .legend li { display: flex; align-items: center; margin-bottom: 15px; }
+        .color-box { width: 20px; height: 20px; border-radius: 4px; margin-right: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background-color: var(--primary); color: white; padding: 15px; text-align: left; font-size: 16px; }
+        td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 15px; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        .area-chart-svg { width: 100%; height: 350px; }
+        .axis-labels { font-size: 14px; fill: var(--text-muted); }
+        .title-slide { text-align: left; justify-content: center; background-color: var(--primary); color: white; }
+        .title-slide h1 { color: white; margin-bottom: 20px; border-bottom: 4px solid var(--accent); display: inline-block; padding-bottom: 10px; }
+        .section-title-layout { text-align: center; background-color: var(--primary); justify-content: center; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="slide-container title-slide">
+    <div class="content-area">
+        <h1>2026 경남 지산맞<br>훈련실적 성과 보고</h1>
+        <p style="font-size: 24px; color: #cbd5e1;">Gyeongnam Regional Skills Council</p>
+        <p style="margin-top: 40px; font-size: 18px; color: var(--accent);">기준일자: 2026. 05. 19.</p>
+    </div>
+</div>
+
+<div class="slide-container">
+    <h2 class="slide-title">주요 핵심 지표 (KPI Overview)</h2>
+    <div class="content-area">
+        <div class="highlight-numbers-layout">
+            <div class="kpi-card"><div class="number">112.7%</div><div class="number-label">통합 목표 달성률</div></div>
+            <div class="kpi-card"><div class="number">74.1%</div><div class="number-label">향상과정 수료율</div></div>
+            <div class="kpi-card"><div class="number">44.6%</div><div class="number-label">양성과정 수료율</div></div>
+            <div class="kpi-card"><div class="number">28.3%</div><div class="number-label">취업 성공률</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container">
+    <h2 class="slide-title">공동훈련센터 통합 실적 요약</h2>
+    <div class="content-area">
+        <table>
+            <thead>
+                <tr><th>훈련센터</th><th>목표인원</th><th>수료인원</th><th>달성률</th><th>취업인원</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>경남대학교</td><td>649</td><td>819</td><td style="color:var(--success); font-weight:700;">126.2%</td><td>0</td></tr>
+                <tr><td>인제대학교</td><td>600</td><td>417</td><td>69.5%</td><td>1</td></tr>
+                <tr><td>진주폴리텍</td><td>615</td><td>1,035</td><td style="color:var(--success); font-weight:700;">168.3%</td><td>12</td></tr>
+                <tr><td>창원폴리텍</td><td>630</td><td>541</td><td>85.9%</td><td>0</td></tr>
+                <tr style="background:#e2e8f0; font-weight:700;"><td>합계 (Total)</td><td>2,494</td><td>2,812</td><td>112.8%</td><td>13</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="slide-container section-title-layout">
+    <div class="content-area">
+        <h2 style="font-size: 60px;">Q & A</h2>
+        <div style="margin-top: 50px; color: var(--accent); font-weight: 700;">
+            Gyeongnam Regional Skills Council | 2026 Performance Review
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
