@@ -4,10 +4,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 st.set_page_config(page_title="지산맞 실적 대시보드", page_icon="📈", layout="wide")
-st.title("📈 2026년 지산맞 훈련실적 대시보드")
-st.markdown("목표 대비 달성 현황(게이지 차트) 및 세부 실적을 한눈에 파악할 수 있습니다.")
+st.title("📈 2026년 지산맞 훈련실적 대시보드 (신규 DB 포맷)")
 
-# 파일 업로드
+# 파일 업로드 (DB형식_원본데이터 파일 업로드)
 uploaded_file = st.file_uploader("수정된 'DB형식_원본데이터' CSV 또는 Excel을 업로드하세요.", type=['csv', 'xlsx'])
 
 if uploaded_file is not None:
@@ -16,125 +15,81 @@ if uploaded_file is not None:
     else:
         df = pd.read_excel(uploaded_file)
         
-    # 데이터 전처리 (숫자형 변환)
+    # 데이터 전처리
     cols_to_numeric = ['목표인원', '수료인원', '취업인원', '목표취업인원', '입교인원']
     for col in cols_to_numeric:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-            
-    # 통합(양성+향상) 데이터 필터링
-    df_integrated = df[df['훈련유형'].isin(['향상과정', '양성과정'])]
     
-    # ---------------- 1. 목표 vs 실적 게이지 차트 (Gauge Charts) ---------------- #
-    st.markdown("### 🎯 1. 주요 목표 대비 달성 현황")
+    # ---------------- 1. 핵심 지표 (KPI) ---------------- #
+    st.markdown("### ▶ 1. 핵심 성과 지표 (KPI)")
     
-    # 상단 2개 대형 게이지 차트 (통합 실적, 통합 취업)
-    gauge_col1, gauge_col2 = st.columns(2)
+    # KPI 계산
+    df_hyang_yang = df[df['훈련유형'].isin(['향상과정', '양성과정'])]
+    total_target = df_hyang_yang['목표인원'].sum()
+    total_comp = df_hyang_yang['수료인원'].sum()
+    total_emp = df['취업인원'].sum()
     
-    with gauge_col1:
-        total_target = df_integrated['목표인원'].sum()
-        total_comp = df_integrated['수료인원'].sum()
-        
-        fig_g1 = go.Figure(go.Indicator(
-            mode = "gauge+number+delta",
-            value = total_comp,
-            title = {'text': "<b>통합(양성+향상) 목표 vs 수료실적</b>", 'font': {'size': 20}},
-            delta = {'reference': total_target, 'increasing': {'color': "green"}},
-            gauge = {
-                'axis': {'range': [None, max(total_target, total_comp) * 1.2], 'tickwidth': 1, 'tickcolor': "darkblue"},
-                'bar': {'color': "#3182CE"},
-                'bgcolor': "white",
-                'borderwidth': 2,
-                'bordercolor': "gray",
-                'steps': [
-                    {'range': [0, total_target*0.5], 'color': "#E2E8F0"},
-                    {'range': [total_target*0.5, total_target], 'color': "#CBD5E0"}],
-                'threshold': {
-                    'line': {'color': "red", 'width': 4},
-                    'thickness': 0.75,
-                    'value': total_target}
-            }
-        ))
-        fig_g1.update_layout(height=350)
-        st.plotly_chart(fig_g1, use_container_width=True)
+    hyang = df[df['훈련유형'] == '향상과정']
+    yang = df[df['훈련유형'] == '양성과정']
+    jang = df[df['훈련유형'] == '장기유급']
 
-    with gauge_col2:
-        emp_target = df['목표취업인원'].sum()
-        emp_comp = df['취업인원'].sum()
-        
-        # 목표취업인원이 0인 경우를 대비한 처리
-        max_emp_range = max(emp_target, emp_comp) * 1.2 if max(emp_target, emp_comp) > 0 else 100
-        
-        fig_g2 = go.Figure(go.Indicator(
-            mode = "gauge+number+delta",
-            value = emp_comp,
-            title = {'text': "<b>통합 목표취업자 vs 실제 취업자</b>", 'font': {'size': 20}},
-            delta = {'reference': emp_target, 'increasing': {'color': "green"}},
-            gauge = {
-                'axis': {'range': [None, max_emp_range]},
-                'bar': {'color': "#38A169"},
-                'steps': [
-                    {'range': [0, emp_target*0.5], 'color': "#E2E8F0"},
-                    {'range': [emp_target*0.5, emp_target], 'color': "#CBD5E0"}],
-                'threshold': {
-                    'line': {'color': "red", 'width': 4},
-                    'thickness': 0.75,
-                    'value': emp_target}
-            }
-        ))
-        fig_g2.update_layout(height=350)
-        st.plotly_chart(fig_g2, use_container_width=True)
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("통합 수료 (달성률)", f"{int(total_comp):,}명", f"{(total_comp/total_target*100) if total_target else 0:.1f}%")
+    col2.metric("통합 취업 (취업률)", f"{int(total_emp):,}명", f"{(total_emp/total_comp*100) if total_comp else 0:.1f}%")
+    col3.metric("향상 수료 (달성률)", f"{int(hyang['수료인원'].sum()):,}명", f"{(hyang['수료인원'].sum()/hyang['목표인원'].sum()*100) if hyang['목표인원'].sum() else 0:.1f}%")
+    col4.metric("양성 수료 (달성률)", f"{int(yang['수료인원'].sum()):,}명", f"{(yang['수료인원'].sum()/yang['목표인원'].sum()*100) if yang['목표인원'].sum() else 0:.1f}%")
+    col5.metric("장기유급 (수료율)", f"{int(jang['수료인원'].sum()):,}명", f"{(jang['수료인원'].sum()/jang['입교인원'].sum()*100) if jang['입교인원'].sum() else 0:.1f}%")
 
-    # 하단 4개 소형 게이지 차트 (공동훈련센터별 통합 목표 vs 실적)
-    st.markdown("#### 🏢 공동훈련센터별 통합 목표 vs 실적")
-    center_grouped = df_integrated.groupby('공동훈련센터')[['목표인원', '수료인원']].sum().reset_index()
+    st.markdown("---")
     
-    # 훈련센터 개수에 맞춰 컬럼 생성 (기본 4개 센터 기준)
-    cols = st.columns(len(center_grouped))
+    # ---------------- 2. 센터별 목표 vs 달성 시각화 ---------------- #
+    st.markdown("### ▶ 2. 공동훈련센터별 목표 VS 달성 (향상 및 양성)")
+    chart_col1, chart_col2 = st.columns(2)
     
-    for idx, row in center_grouped.iterrows():
-        with cols[idx]:
-            c_target = row['목표인원']
-            c_comp = row['수료인원']
-            
-            fig_c = go.Figure(go.Indicator(
-                mode = "gauge+number",
-                value = c_comp,
-                title = {'text': f"{row['공동훈련센터']}", 'font': {'size': 16}},
-                gauge = {
-                    'axis': {'range': [None, max(c_target, c_comp) * 1.2 if max(c_target, c_comp) > 0 else 100]},
-                    'bar': {'color': "#DD6B20"},
-                    'threshold': {
-                        'line': {'color': "red", 'width': 3},
-                        'thickness': 0.75,
-                        'value': c_target}
-                }
-            ))
-            fig_c.update_layout(height=250, margin=dict(l=20, r=20, t=50, b=20))
-            st.plotly_chart(fig_c, use_container_width=True)
+    # 향상과정 차트
+    with chart_col1:
+        hyang_grouped = hyang.groupby('공동훈련센터')[['목표인원', '수료인원']].sum().reset_index()
+        fig_hyang = go.Figure()
+        fig_hyang.add_trace(go.Bar(x=hyang_grouped['공동훈련센터'], y=hyang_grouped['목표인원'], name='목표인원', marker_color='#E2E8F0'))
+        fig_hyang.add_trace(go.Bar(x=hyang_grouped['공동훈련센터'], y=hyang_grouped['수료인원'], name='수료인원', marker_color='#3182CE'))
+        fig_hyang.update_layout(title="[향상과정] 목표 VS 수료 달성 현황", barmode='group')
+        st.plotly_chart(fig_hyang, use_container_width=True)
+        
+    # 양성과정 차트
+    with chart_col2:
+        yang_grouped = yang.groupby('공동훈련센터')[['목표인원', '수료인원']].sum().reset_index()
+        fig_yang = go.Figure()
+        fig_yang.add_trace(go.Bar(x=yang_grouped['공동훈련센터'], y=yang_grouped['목표인원'], name='목표인원', marker_color='#E2E8F0'))
+        fig_yang.add_trace(go.Bar(x=yang_grouped['공동훈련센터'], y=yang_grouped['수료인원'], name='수료인원', marker_color='#DD6B20'))
+        fig_yang.update_layout(title="[양성과정] 목표 VS 수료 달성 현황", barmode='group')
+        st.plotly_chart(fig_yang, use_container_width=True)
 
     st.markdown("---")
 
-    # ---------------- 2. 세부 실적 비중 및 추이 시각화 ---------------- #
-    st.markdown("### 📊 2. 실적 비중 및 세부 차트")
+    # ---------------- 3. 비중 및 추이 시각화 ---------------- #
+    st.markdown("### ▶ 3. 실적 비중 및 월별 추이")
     pie_col1, pie_col2, line_col = st.columns([1, 1, 2])
     
     with pie_col1:
         type_pie = df.groupby('훈련유형')['수료인원'].sum().reset_index()
-        fig_type = px.pie(type_pie, values='수료인원', names='훈련유형', title='훈련유형별 수료 비중', hole=0.4)
+        fig_type = px.pie(type_pie, values='수료인원', names='훈련유형', title='훈련유형별 비중', hole=0.4)
         st.plotly_chart(fig_type, use_container_width=True)
         
     with pie_col2:
         center_pie = df.groupby('공동훈련센터')['수료인원'].sum().reset_index()
-        fig_center = px.pie(center_pie, values='수료인원', names='공동훈련센터', title='공동훈련센터별 실적 비중')
+        fig_center = px.pie(center_pie, values='수료인원', names='공동훈련센터', title='공동훈련센터별 비중')
         st.plotly_chart(fig_center, use_container_width=True)
         
     with line_col:
+        # 기준일자(월)을 추출하여 시계열로 그리기
         if '기준일자' in df.columns:
             df['월'] = pd.to_datetime(df['기준일자']).dt.month.astype(str) + "월"
             trend_df = df.groupby('월')[['수료인원', '취업인원']].sum().reset_index()
             fig_line = go.Figure()
-            fig_line.add_trace(go.Bar(x=trend_df['월'], y=trend_df['수료인원'], name='수료인원', marker_color='#3182CE'))
+            fig_line.add_trace(go.Scatter(x=trend_df['월'], y=trend_df['수료인원'], mode='lines+markers', name='수료인원', line=dict(color='blue', width=3)))
             fig_line.add_trace(go.Scatter(x=trend_df['월'], y=trend_df['취업인원'], mode='lines+markers', name='취업인원', line=dict(color='green', width=3)))
             fig_line.update_layout(title='월별 수료 및 취업 추이')
             st.plotly_chart(fig_line, use_container_width=True)
+        else:
+            st.info("데이터에 '기준일자' 열이 없어 추이 그래프를 생성할 수 없습니다.")
